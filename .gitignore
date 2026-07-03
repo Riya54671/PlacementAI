@@ -9,7 +9,7 @@ backend/gmail_credentials.json
 backend/gmail_token.json
 backend/sheets_token.json
 backend/previous_searches.json
-
+config/
 
 # python
 __pycache__/
