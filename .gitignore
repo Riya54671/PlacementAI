@@ -10,6 +10,7 @@ backend/gmail_token.json
 backend/sheets_token.json
 backend/previous_searches.json
 
+
 # python
 __pycache__/
 *.pyc
