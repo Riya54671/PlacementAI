@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PlacementAI — Job Feed</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f7;
+            padding: 24px;
+            color: #1a1a1a;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto 24px;
+        }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header .count { color: #666; font-size: 14px; margin-top: 4px; }
+        .run-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .run-btn:hover { background: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        /* job card */
+        .job-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .job-card.urgent {
+            border-left: 3px solid #E24B4A;
+        }
+        .job-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .company { font-size: 13px; color: #666; }
+        .role { font-size: 17px; font-weight: 600; margin-top: 2px; }
+        .badges { display: flex; gap: 6px; align-items: center; }
+        .score {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .score.high { background: #e1f5ee; color: #085041; }
+        .score.mid  { background: #faeeda; color: #633806; }
+        .urgent-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: #fde8e8;
+            color: #E24B4A;
+            font-weight: 500;
+        }
+        .reason { font-size: 13px; color: #666; margin: 8px 0 12px; }
+        .stack { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .pill {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #f0f0f2;
+            color: #555;
+        }
+
+        /* action buttons */
+        .actions { display: flex; gap: 8px; }
+        .btn {
+            flex: 1;
+            padding: 9px 0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+        .btn-apply { background: #eeedfe; color: #3c3489; }
+        .btn-apply:hover { background: #dddcfd; }
+        .btn-recruiter { background: #e8f4fd; color: #1a5276; }
+        .btn-recruiter:hover { background: #d5eaf9; }
+        .btn-skip {
+            background: #f0f0f2;
+            color: #666;
+            flex: 0 0 70px;
+        }
+        .btn-skip:hover { background: #e4e4e6; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* recruiter panel */
+        .recruiter-panel {
+            display: none;
+            margin-top: 14px;
+            padding: 14px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 0.5px solid #e0e0e0;
+        }
+        .recruiter-panel.visible { display: block; }
+        .recruiter-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .recruiter-title { font-size: 12px; color: #666; margin-bottom: 10px; }
+        .recruiter-links { display: flex; gap: 8px; margin-bottom: 12px; }
+        .link-btn {
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 0.5px solid #ccc;
+            background: white;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+        .link-btn:hover { background: #f0f0f0; }
+
+        /* email panel */
+        .email-panel {
+            display: none;
+            margin-top: 10px;
+        }
+        .email-panel.visible { display: block; }
+        .email-field {
+            margin-bottom: 8px;
+        }
+        .email-label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+        }
+        .email-input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 0.5px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .email-body {
+            width: 100%;
+            padding: 7px 10px;
+            border: 0.5px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            min-height: 140px;
+            resize: vertical;
+        }
+        .email-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-send {
+            flex: 1;
+            padding: 9px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-send:hover { background: #333; }
+        .btn-draft {
+            flex: 1;
+            padding: 9px;
+            background: #eeedfe;
+            color: #3c3489;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* dm panel */
+        .dm-panel {
+            display: none;
+            margin-top: 10px;
+        }
+        .dm-panel.visible { display: block; }
+        .dm-text {
+            width: 100%;
+            padding: 7px 10px;
+            border: 0.5px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            min-height: 80px;
+            resize: vertical;
+        }
+        .copy-btn {
+            margin-top: 8px;
+            width: 100%;
+            padding: 8px;
+            background: #f0f0f2;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: #e4e4e6; }
+
+        /* status */
+        .status-msg {
+            font-size: 12px;
+            color: #1D9E75;
+            margin-top: 6px;
+            display: none;
+        }
+        .job-card.hidden { display: none; }
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .loading { color: #999; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>PlacementAI</h1>
+        <div class="count">{{ count }} new opening{{ 's' if count != 1 else '' }}</div>
+    </div>
+    <button class="run-btn" onclick="runNow(this)">Run now</button>
+</div>
+
+<div class="container">
+    {% if jobs|length == 0 %}
+    <div class="empty">
+        No new jobs right now.<br>
+        <small style="color:#aaa">The agent runs every 4 hours or click "Run now" above.</small>
+    </div>
+    {% endif %}
+
+    {% for job in jobs %}
+    <div class="job-card {{ 'urgent' if job.urgent else '' }}" id="job-{{ job.id }}">
+
+        <div class="job-top">
+            <div>
+                <div class="company">{{ job.company }}</div>
+                <div class="role">{{ job.role }}</div>
+            </div>
+            <div class="badges">
+                {% if job.urgent %}
+                <span class="urgent-badge">⚡ Urgent</span>
+                {% endif %}
+                <div class="score {{ 'high' if job.score >= 8 else 'mid' }}">
+                    {{ job.score }}/10
+                </div>
+            </div>
+        </div>
+
+        <div class="reason">{{ job.reason }}</div>
+
+        <div class="stack">
+            {% for tech in job.stack %}
+            <span class="pill">{{ tech }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- main action buttons -->
+        <div class="actions">
+            <a href="{{ job.url }}" target="_blank"
+               class="btn btn-apply"
+               onclick="markApplied('{{ job.id }}', '{{ job.company }}', '{{ job.role }}')">
+               Open application
+            </a>
+            <button class="btn btn-recruiter"
+                    onclick="findRecruiter(this, '{{ job.id }}', '{{ job.company }}', '{{ job.role }}')">
+                Find recruiter
+            </button>
+            <button class="btn btn-skip"
+                    onclick="skipJob('{{ job.id }}')">
+                Skip
+            </button>
+        </div>
+
+        <!-- recruiter panel (hidden until found) -->
+        <div class="recruiter-panel" id="recruiter-{{ job.id }}">
+            <div class="recruiter-name" id="rname-{{ job.id }}"></div>
+            <div class="recruiter-title" id="rtitle-{{ job.id }}"></div>
+            <div class="recruiter-links">
+                <a class="link-btn" id="rlinkedin-{{ job.id }}"
+                   href="#" target="_blank">Open LinkedIn →</a>
+                <button class="link-btn"
+                        onclick="draftDM('{{ job.id }}', '{{ job.company }}', '{{ job.role }}')">
+                    Draft DM
+                </button>
+                <button class="link-btn"
+                        onclick="showEmailPanel('{{ job.id }}', '{{ job.company }}', '{{ job.role }}')">
+                    Draft email
+                </button>
+            </div>
+
+            <!-- dm panel -->
+            <div class="dm-panel" id="dm-{{ job.id }}">
+                <div class="email-label">LinkedIn DM (copy and paste)</div>
+                <textarea class="dm-text" id="dmtext-{{ job.id }}"></textarea>
+                <button class="copy-btn"
+                        onclick="copyDM('{{ job.id }}')">
+                    Copy DM
+                </button>
+            </div>
+
+            <!-- email panel -->
+            <div class="email-panel" id="email-{{ job.id }}">
+                <div class="email-field">
+                    <div class="email-label">To</div>
+                    <input class="email-input" id="eto-{{ job.id }}"
+                           placeholder="recruiter@company.com (use Skrapp for verified)"/>
+                </div>
+                <div class="email-field">
+                    <div class="email-label">Subject</div>
+                    <input class="email-input" id="esubject-{{ job.id }}" />
+                </div>
+                <div class="email-field">
+                    <div class="email-label">Body</div>
+                    <textarea class="email-body" id="ebody-{{ job.id }}"></textarea>
+                </div>
+                <div class="email-actions">
+                    <button class="btn-draft"
+                            onclick="draftEmail('{{ job.id }}', '{{ job.company }}', '{{ job.role }}')">
+                        Re-draft
+                    </button>
+                    <button class="btn-send"
+                            onclick="sendEmail('{{ job.id }}', '{{ job.company }}', '{{ job.role }}')">
+                        Send email
+                    </button>
+                </div>
+                <div class="status-msg" id="estatus-{{ job.id }}">✅ Email sent!</div>
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // your name — update this
+    const CANDIDATE_NAME = "Riya Agrawal";
+    const BACKGROUND = "4th year CS student at Symbiosis Institute of Technology, Pune (graduating 2027). Built a distributed microservices platform using Spring Boot, React, MongoDB, Redis and Docker. Also built RAG pipelines using FAISS. Top 50 nationally at CodeCircuit Hackathon. Active GDSC contributor (Top 1%).";
+
+    function skipJob(jobId) {
+        fetch('/jobs/skip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_id: jobId })
+        }).then(() => {
+            document.getElementById('job-' + jobId).classList.add('hidden');
+        });
+    }
+
+    function markApplied(jobId, company, role) {
+        fetch('/jobs/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_id: jobId })
+        });
+        // update sheets via backend
+        fetch('/sheets/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ company, role, status: 'Applied' })
+        }).catch(() => {});
+    }
+
+    function findRecruiter(btn, jobId, company, role) {
+        btn.textContent = 'Searching...';
+        btn.disabled = true;
+
+        fetch('/recruiter/find', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                job_id: jobId,
+                company: company,
+                role: role
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            const rec = data.recruiter;
+            document.getElementById('rname-' + jobId).textContent = rec.name;
+            document.getElementById('rtitle-' + jobId).textContent = rec.title;
+
+            const li = document.getElementById('rlinkedin-' + jobId);
+            li.href = rec.linkedin_url || '#';
+
+            // pre-fill email to field with guessed email
+            const etoField = document.getElementById('eto-' + jobId);
+            if (etoField && rec.email_guessed) {
+                etoField.value = rec.email_guessed;
+                etoField.style.color = '#E24B4A';
+                etoField.title = 'Guessed — verify with Skrapp Chrome extension';
+            }
+
+            document.getElementById('recruiter-' + jobId).classList.add('visible');
+            btn.textContent = 'Found ✓';
+
+            // auto draft email
+            draftEmail(jobId, company, role);
+        })
+        .catch(err => {
+            btn.textContent = 'Find recruiter';
+            btn.disabled = false;
+            alert('Could not find recruiter: ' + err);
+        });
+    }
+
+    function showEmailPanel(jobId, company, role) {
+        document.getElementById('email-' + jobId).classList.add('visible');
+        document.getElementById('dm-' + jobId).classList.remove('visible');
+    }
+
+    function draftEmail(jobId, company, role) {
+        const recruiterName = document.getElementById('rname-' + jobId).textContent || 'Hiring Manager';
+
+        fetch('/recruiter/email/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                job_id: jobId,
+                company: company,
+                role: role,
+                recruiter_name: recruiterName,
+                candidate_name: CANDIDATE_NAME,
+                background: BACKGROUND
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('esubject-' + jobId).value = data.subject || '';
+            document.getElementById('ebody-' + jobId).value = data.body || '';
+            document.getElementById('email-' + jobId).classList.add('visible');
+        })
+        .catch(err => console.log('Draft failed:', err));
+    }
+
+    function draftDM(jobId, company, role) {
+        const recruiterName = document.getElementById('rname-' + jobId).textContent;
+        const recruiterTitle = document.getElementById('rtitle-' + jobId).textContent;
+
+        fetch('/recruiter/dm/draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                job_id: jobId,
+                company: company,
+                role: role,
+                person_name: recruiterName,
+                person_title: recruiterTitle,
+                candidate_name: CANDIDATE_NAME
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('dmtext-' + jobId).value = data.message || '';
+            document.getElementById('dm-' + jobId).classList.add('visible');
+            document.getElementById('email-' + jobId).classList.remove('visible');
+        })
+        .catch(err => console.log('DM draft failed:', err));
+    }
+
+    function copyDM(jobId) {
+        const text = document.getElementById('dmtext-' + jobId).value;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = event.target;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy DM', 2000);
+        });
+    }
+
+    function sendEmail(jobId, company, role) {
+        const to = document.getElementById('eto-' + jobId).value;
+        const subject = document.getElementById('esubject-' + jobId).value;
+        const body = document.getElementById('ebody-' + jobId).value;
+
+        if (!to || !to.includes('@')) {
+            alert('Please enter a valid email address first');
+            return;
+        }
+
+        if (!confirm(`Send email to ${to}?`)) return;
+
+        fetch('/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_id: jobId, company, role, to, subject, body })
+        })
+        .then(r => r.json())
+        .then(data => {
+            const status = document.getElementById('estatus-' + jobId);
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 3000);
+        })
+        .catch(err => alert('Send failed: ' + err));
+    }
+
+    function runNow(btn) {
+        btn.textContent = 'Running...';
+        btn.disabled = true;
+
+        fetch('/run-now', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                alert(`Done! Found ${data.jobs_found} jobs, saved ${data.jobs_saved} new ones.`);
+                location.reload();
+            })
+            .catch(err => {
+                alert('Run failed: ' + err);
+            })
+            .finally(() => {
+                btn.textContent = 'Run now';
+                btn.disabled = false;
+            });
+    }
+</script>
+
+</body>
+</html>

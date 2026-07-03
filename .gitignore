@@ -1,0 +1,26 @@
+
+# environment variables — never push these
+.env
+backend/.env
+laptop/.env
+
+# credentials — never push these
+backend/gmail_credentials.json
+backend/gmail_token.json
+backend/sheets_token.json
+backend/previous_searches.json
+
+# python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
+
+# search history
+backend/previous_searches.json
+
+# node
+node_modules/
+
+# misc
+.DS_Store
