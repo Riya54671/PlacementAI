@@ -182,7 +182,10 @@ def _is_useful_url(url: str) -> bool:
         "glassdoor.com", "ambitionbox.com",
         "timesjobs.com", "shine.com", "monster.com",
         "careerjet.co.in", "freshersworld.com",
-        "placementseason.com", "campusplacements.com",
+        "placementseason.com", "campusplacements.com","piohindi.com", "internshipshub.in", "freshershunt.in",
+        "vthetecheejobs.com", "thenewviews.com", "placementdrive.in",
+        "jobformore.com", "internhq.com", "indiaai.gov.in",
+        "consint.ai"
     ]
     for domain in skip_domains:
         if domain in url_lower:
@@ -194,7 +197,7 @@ def _is_useful_url(url: str) -> bool:
         "/about/", "/locations/", "/team/", "/culture/",
         "/ru/", "/articles/", "/posts/", "/tutorials/",
         "/course/", "/learn/", "/guide/", "?q=", "?s=",
-        "/tag/", "/category/", "/author/",
+        "/tag/", "/category/", "/author/","/Interview/", "glassdoor.co.in"
     ]
     for pattern in skip_patterns:
         if pattern in url_lower:
