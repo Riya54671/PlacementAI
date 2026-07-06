@@ -5,6 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from routes import jobs, settings, recruiter, email, sheets
 from scheduler import start_scheduler, stop_scheduler, trigger_now
+from fastapi import FastAPI, Response
+from fastapi.responses import JSONResponse
+
+@app.get("/")
+@app.head("/")
+def root():
+    return {"status": "running", "message": "PlacementAI backend is alive"}
 
 
 @asynccontextmanager
