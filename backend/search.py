@@ -21,7 +21,6 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 def generate_queries(config) -> List[str]:
     """Ask Groq to generate diverse search queries based on your profile"""
     
-    # load previous searches to avoid repetition
     previous = _load_previous_searches()
     
     try:
@@ -35,23 +34,31 @@ def generate_queries(config) -> List[str]:
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.9   # higher = more creative/varied
+            temperature=0.9
         )
         text = response.choices[0].message.content.strip()
         text = text.replace("```json", "").replace("```", "").strip()
+
+        # extract just the JSON object — ignore anything after it
+        start = text.find("{")
+        end = text.rfind("}") + 1
+        if start >= 0 and end > start:
+            text = text[start:end]
+
         data = json.loads(text)
         queries = data.get("queries", [])
-        
-        # save these queries so next run avoids them
+
+        # save for next run
         _save_previous_searches(queries)
-        
+
         print(f"🔍 Generated {len(queries)} search queries")
         return queries
+
     except Exception as e:
         print(f"❌ Query generation failed: {e}")
         return _fallback_queries()
-
-
+    
+    
 def _load_previous_searches() -> list:
     """Load previous search queries from file"""
     try:
