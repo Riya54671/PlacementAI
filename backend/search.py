@@ -58,7 +58,7 @@ def generate_queries(config) -> List[str]:
         print(f"❌ Query generation failed: {e}")
         return _fallback_queries()
     
-    
+
 def _load_previous_searches() -> list:
     """Load previous search queries from file"""
     try:
@@ -137,7 +137,7 @@ def search_linkedin_profiles(company: str, role: str) -> List[dict]:
     with DDGS() as ddgs:
         for query in queries:
             try:
-                results = ddgs.text(query, max_results=5)
+                results = ddgs.text(query, max_results=5,timelimit='w')
                 for r in results:
                     url = r.get("href", "")
                     if "linkedin.com/in/" in url and url not in seen_urls:
@@ -161,43 +161,60 @@ def search_linkedin_profiles(company: str, role: str) -> List[dict]:
 # ─── URL FILTER ──────────────────────────────────────────
 
 def _is_useful_url(url: str) -> bool:
+    """Strictly filter — only keep URLs that are likely actual job listings"""
     if not url:
         return False
 
-    # skip these entirely
+    url_lower = url.lower()
+
+    # hard skip — these are never job listings
     skip_domains = [
-        "youtube.com", "facebook.com", "twitter.com",
-        "instagram.com", "reddit.com", "quora.com",
-        "wikipedia.org", "bing.com/aclick", "google.com/aclk",
-        "sysout.ru", "codeutility.io",  # junk sites from earlier
+        "youtube.com", "facebook.com", "twitter.com", "x.com",
+        "instagram.com", "reddit.com", "quora.com", "wikipedia.org",
+        "medium.com", "substack.com", "hashnode.dev", "dev.to",
+        "towardsdatascience.com", "analyticsvidhya.com",
+        "geeksforgeeks.org", "leetcode.com", "hackerrank.com",
+        "stackoverflow.com", "github.com", "gitlab.com",
+        "bing.com", "google.com/aclk",
+        "habr.com", "sysout.ru", "codeutility.io",
+        "monikalearns.com", "placement-officer.com",
+        "gethiredfaster.in", "thenewviews.com",
+        "glassdoor.com", "ambitionbox.com",
+        "timesjobs.com", "shine.com", "monster.com",
+        "careerjet.co.in", "freshersworld.com",
+        "placementseason.com", "campusplacements.com",
     ]
     for domain in skip_domains:
-        if domain in url:
+        if domain in url_lower:
             return False
 
-    # strongly prefer these — actual job pages
-    strong_signals = [
-        "careers.", "jobs.", "/careers", "/jobs",
-        "wellfound.com", "cutshort.io", "internshala.com",
-        "lever.co", "greenhouse.io", "workday.com",
-        "instahyre.com", "linkedin.com/jobs",
-        "naukri.com", "angellist.com",
-    ]
-    for signal in strong_signals:
-        if signal in url.lower():
-            return True
-
-    # skip generic pages that keep appearing
+    # skip URL patterns that are clearly not job listings
     skip_patterns = [
-        "/locations/", "/about", "/blog", "/press",
-        "monikalearns.com", "placement-officer.com",
-        "gethiredfaster.in"
+        "/blog/", "/article/", "/news/", "/press/",
+        "/about/", "/locations/", "/team/", "/culture/",
+        "/ru/", "/articles/", "/posts/", "/tutorials/",
+        "/course/", "/learn/", "/guide/", "?q=", "?s=",
+        "/tag/", "/category/", "/author/",
     ]
     for pattern in skip_patterns:
-        if pattern in url.lower():
+        if pattern in url_lower:
             return False
 
-    return True
+    # must have at least one job signal to be included
+    job_signals = [
+        "career", "job", "hiring", "intern", "recruit",
+        "wellfound", "cutshort", "internshala", "naukri",
+        "lever.co", "greenhouse.io", "workday.com",
+        "instahyre", "linkedin.com/jobs", "linkedin.com/in",
+        "apply", "opening", "vacancy", "position",
+        "angellist", "workatastartup",
+    ]
+    for signal in job_signals:
+        if signal in url_lower:
+            return True
+
+    # everything else — skip it
+    return False
 
 # ─── TEST ─────────────────────────────────────────────────
 

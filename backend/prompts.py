@@ -1,48 +1,44 @@
 SEARCH_QUERY_PROMPT = """
-You are a job search assistant helping an Indian CS student
-find off-campus internships with PPO opportunity.
+You are a job search assistant helping an Indian CS student find 
+off-campus internships with PPO (Pre-Placement Offer).
 
 Skills: {skills}
 Role type: {role_type}
 Seniority: {seniority}
-Previously searched topics (avoid repeating these): {previous_searches}
+Previously searched (avoid repeating): {previous_searches}
 
-Generate 8 DIVERSE search queries. Use a MIX of these strategies:
+Generate 8 search queries that will ONLY find actual job listings,
+not articles, blogs or tutorials.
 
-STRATEGY A — Direct company career pages:
-"site:careers.stripe.com internship"
-"site:careers.razorpay.com software intern"
-"site:jobs.flipkart.com fresher"
+USE THESE EXACT FORMATS:
 
-STRATEGY B — Startup job boards:
-"wellfound.com backend intern india 2025"
-"cutshort.io react nodejs internship"
-"instahyre.com software intern ppo"
+Format A — Direct apply pages on job boards:
+site:wellfound.com/jobs "intern" "react" OR "node.js" OR "python"
+site:cutshort.io "internship" "backend" OR "full stack" india
+site:internshala.com/internship "react" OR "node" OR "python" 2025
 
-STRATEGY C — Specific companies known for PPO:
-"[company name] software engineering internship PPO 2025"
-Use companies like: Groww, CRED, Meesho, PhonePe, Zepto, 
-Swiggy, Zomato, Juspay, Setu, Postman, BrowserStack,
-Freshworks, Zoho, Chargebee, Hasura, Clevertap
+Format B — Specific funded Indian startups careers pages:
+"[company] careers" internship 2025 apply now
+Use companies: Groww, CRED, PhonePe, Zepto, Meesho, Swiggy, 
+Razorpay, BrowserStack, Postman, Freshworks, Juspay, Setu,
+Hasura, Chargebee, Clevertap, Darwinbox, Leadsquared,
+Unacademy, Vedantu, Byju's, Cashfree, Perfios
 
-STRATEGY D — LinkedIn specific:
-"site:linkedin.com/jobs intern {role_type} india react"
-"site:linkedin.com/jobs fresher python node.js bangalore"
+Format C — LinkedIn job listings only:
+site:linkedin.com/jobs "software engineer intern" india 2025
+site:linkedin.com/jobs "backend intern" "node.js" OR "python" india
 
-STRATEGY E — Naukri/job boards:
-"naukri.com react nodejs internship ppo india"
-"internshala.com full stack intern stipend ppo"
+Format D — Naukri specific:
+site:naukri.com "react developer" intern fresher apply 2025
+site:naukri.com "java developer" internship ppo india
 
-STRATEGY F — Google indexed career pages:
-"intitle:careers intitle:internship react node python 2025 india"
-"inurl:careers software engineering intern india ppo apply"
-
-Rules:
-- Use ALL 6 strategies, at least 1 query per strategy
-- Never repeat a strategy twice in the same run
-- Rotate companies in Strategy C — never use the same company twice
-- Make queries specific, not generic
-- Focus on Indian market and remote opportunities
+STRICT RULES:
+- Every query must target ONLY job listing pages
+- Include "2025" or "2026" in every query for freshness
+- Include "apply" or "intern" or "internship" in every query
+- Never generate queries that could return tutorials or articles
+- Rotate companies — never repeat the same company twice
+- Focus on product companies, NOT service companies
 
 Return JSON only:
 {{"queries": ["query1", "query2", ...]}}

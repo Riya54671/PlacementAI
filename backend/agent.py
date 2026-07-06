@@ -10,6 +10,15 @@ from scrape import scrape
 from extractor import process_page
 from models import AgentRunResult
 
+# skip URLs that are clearly not job listings even after search
+def is_likely_job_url(url: str) -> bool:
+    skip_words = [
+        "article", "blog", "tutorial", "guide", "learn",
+        "course", "news", "press", "about", "team",
+        "habr", "medium", "substack", "dev.to"
+    ]
+    url_lower = url.lower()
+    return not any(word in url_lower for word in skip_words)
 
 def run_agent(max_pages: int = 15) -> AgentRunResult:
     """
@@ -59,6 +68,10 @@ def run_agent(max_pages: int = 15) -> AgentRunResult:
     # limit how many pages we process per run
     urls = urls[:max_pages]
     print(f"\n📦 Processing {len(urls)} URLs this run\n")
+    
+    urls = [u for u in urls if is_likely_job_url(u)]
+    print(f"\n📦 Processing {len(urls[:max_pages])} URLs this run\n")
+    urls = urls[:max_pages]
 
     # step 4, 5, 6 — scrape, extract, score, save each URL
     print(f"STEP 3 — Scraping, extracting, scoring\n")
