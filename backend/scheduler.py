@@ -60,6 +60,29 @@ def update_interval(new_hours: int):
     )
     print(f"✅ Schedule updated — now runs every {new_hours} hours")
 
+def cleanup_old_jobs():
+    """Delete jobs older than 30 days to keep DB lean"""
+    try:
+        from db import supabase
+        from datetime import datetime, timedelta
+        cutoff = (datetime.now() - timedelta(days=30)).isoformat()
+        supabase.table("jobs")\
+            .delete()\
+            .in_("status", ["skipped", "applied", "emailed"])\
+            .lt("created_at", cutoff)\
+            .execute()
+        print("🧹 Cleaned up old jobs")
+    except Exception as e:
+        print(f"❌ Cleanup failed: {e}")
+
+# add this alongside your existing scheduler job in start_scheduler()
+scheduler.add_job(
+    cleanup_old_jobs,
+    trigger=IntervalTrigger(days=1),  # runs once a day
+    id="cleanup_job",
+    replace_existing=True
+)
+
 
 # ─── TEST ─────────────────────────────────────────────────
 
