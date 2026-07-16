@@ -19,8 +19,6 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 # ─── GENERATE SMART QUERIES ──────────────────────────────
 
 def generate_queries(config) -> List[str]:
-    """Ask Groq to generate diverse search queries based on your profile"""
-    
     previous = _load_previous_searches()
     
     try:
@@ -33,13 +31,24 @@ def generate_queries(config) -> List[str]:
 
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.9
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a JSON generator. Always respond with ONLY valid JSON. No explanation, no markdown, no extra text before or after the JSON."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.7
         )
         text = response.choices[0].message.content.strip()
+
+        # strip markdown fences
         text = text.replace("```json", "").replace("```", "").strip()
 
-        # extract just the JSON object — ignore anything after it
+        # find the JSON object boundaries
         start = text.find("{")
         end = text.rfind("}") + 1
         if start >= 0 and end > start:
@@ -48,16 +57,16 @@ def generate_queries(config) -> List[str]:
         data = json.loads(text)
         queries = data.get("queries", [])
 
-        # save for next run
-        _save_previous_searches(queries)
+        if not queries or len(queries) < 3:
+            raise ValueError("Too few queries generated")
 
+        _save_previous_searches(queries)
         print(f"🔍 Generated {len(queries)} search queries")
         return queries
 
     except Exception as e:
         print(f"❌ Query generation failed: {e}")
         return _fallback_queries()
-    
 
 def _load_previous_searches() -> list:
     """Load previous search queries from file"""
