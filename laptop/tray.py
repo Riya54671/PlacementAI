@@ -2,7 +2,7 @@
 
 import pystray
 from PIL import Image, ImageDraw
-from plyer import notification
+from win10toast import ToastNotifier
 import requests
 import threading
 import time
@@ -16,6 +16,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 LOCAL_UI_URL = "http://localhost:5001/jobs"
 POLL_INTERVAL = 1800   # 30 minutes
 KEEPALIVE_INTERVAL = 600  # 10 minutes
+toaster = ToastNotifier()
 
 seen_job_ids = set()
 
@@ -38,6 +39,15 @@ def keep_alive():
             print(f"   ⚠️  Keep-alive failed: {e}")
         time.sleep(KEEPALIVE_INTERVAL)
 
+def notify_and_open(title: str, message: str):
+    """Fire a Windows notification that opens jobs page when clicked"""
+    toaster.show_toast(
+        title,
+        message,
+        duration=10,
+        threaded=True,
+        callback_on_click=lambda: webbrowser.open(LOCAL_UI_URL)
+    )
 
 def check_new_jobs():
     """Poll backend for new jobs, fire notification if found"""
@@ -78,12 +88,7 @@ def check_new_jobs():
                 title = f"{len(new_jobs)} new openings found!"
                 message = f"Top: {top_job['company']} — {top_job['role']} ({top_job['score']}/10)"
 
-            notification.notify(
-                title=title,
-                message=message,
-                app_name="PlacementAI",
-                timeout=10
-            )
+            notify_and_open(title, message)
             print(f"🔔 Notified: {title}")
         else:
             print(f"   No new jobs ({len(jobs)} total in queue)")
@@ -109,14 +114,13 @@ def open_jobs_page(icon, item):
 
 def run_now(icon, item):
     try:
-        notification.notify(
-            title="PlacementAI",
-            message="Running search now... takes 2-3 minutes",
-            app_name="PlacementAI",
-            timeout=5
+        toaster.show_toast(
+            "PlacementAI",
+            "Running search now... takes 2-3 minutes",
+            duration=5,
+            threaded=True
         )
         requests.post(f"{BACKEND_URL}/agent/run", timeout=300)
-        # wait a moment then check for new results
         time.sleep(5)
         check_new_jobs()
     except Exception as e:
