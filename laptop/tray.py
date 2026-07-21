@@ -15,7 +15,7 @@ load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 LOCAL_UI_URL = "http://localhost:5001/jobs"
 POLL_INTERVAL = 1800   # 30 minutes
-KEEPALIVE_INTERVAL = 600  # 10 minutes
+KEEPALIVE_INTERVAL = 540  # 10 minutes
 toaster = ToastNotifier()
 
 seen_job_ids = set()
@@ -30,14 +30,18 @@ def create_icon_image():
 
 
 def keep_alive():
-    """Ping Render every 10 min to prevent sleep"""
+    """Ping Render every 10 min, wait long enough for cold start"""
     while True:
         try:
-            requests.get(f"{BACKEND_URL}/", timeout=30)
+            # 90 second timeout — enough for Render cold start (30-50s)
+            requests.get(f"{BACKEND_URL}/", timeout=90)
             print(f"   💓 Keep-alive ping sent")
+        except requests.exceptions.Timeout:
+            # timeout is ok — Render is waking up, will be ready next poll
+            print(f"   ⚠️  Keep-alive timeout — Render waking up")
         except Exception as e:
             print(f"   ⚠️  Keep-alive failed: {e}")
-        time.sleep(KEEPALIVE_INTERVAL)
+        time.sleep(600)  # every 10 minutes
 
 def notify_and_open(title: str, message: str):
     """Fire a Windows notification that opens jobs page when clicked"""
