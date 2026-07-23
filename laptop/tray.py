@@ -2,7 +2,8 @@
 
 import pystray
 from PIL import Image, ImageDraw
-from win10toast import ToastNotifier
+from plyer import notification
+import webbrowser
 import requests
 import threading
 import time
@@ -16,7 +17,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 LOCAL_UI_URL = "http://localhost:5001/jobs"
 POLL_INTERVAL = 1800   # 30 minutes
 KEEPALIVE_INTERVAL = 540  # 10 minutes
-toaster = ToastNotifier()
+
 
 seen_job_ids = set()
 
@@ -44,14 +45,15 @@ def keep_alive():
         time.sleep(600)  # every 10 minutes
 
 def notify_and_open(title: str, message: str):
-    """Fire a Windows notification that opens jobs page when clicked"""
-    toaster.show_toast(
-        title,
-        message,
-        duration=10,
-        threaded=True,
-        callback_on_click=lambda: webbrowser.open(LOCAL_UI_URL)
+    """Fire OS notification and auto-open jobs page"""
+    notification.notify(
+        title=title,
+        message=message,
+        app_name="PlacementAI",
+        timeout=10
     )
+    # auto-open jobs page so you see new listings immediately
+    webbrowser.open(LOCAL_UI_URL)
 
 def check_new_jobs():
     """Poll backend for new jobs, fire notification if found"""
@@ -115,14 +117,13 @@ def polling_loop():
 def open_jobs_page(icon, item):
     webbrowser.open(LOCAL_UI_URL)
 
-
 def run_now(icon, item):
     try:
-        toaster.show_toast(
-            "PlacementAI",
-            "Running search now... takes 2-3 minutes",
-            duration=5,
-            threaded=True
+        notification.notify(
+            title="PlacementAI",
+            message="Running search now... takes 2-3 minutes",
+            app_name="PlacementAI",
+            timeout=5
         )
         requests.post(f"{BACKEND_URL}/agent/run", timeout=300)
         time.sleep(5)
