@@ -58,6 +58,8 @@ def generate_queries(config) -> List[str]:
         try:
             data = json.loads(text)
             queries = data.get("queries", [])
+            # after extracting queries
+            queries = queries[:8]  # cap at 8 regardless of how many extracted
         except json.JSONDecodeError:
             # fallback — extract quoted strings that look like queries
             import re
@@ -214,7 +216,9 @@ def _is_useful_url(url: str) -> bool:
         "/about/", "/locations/", "/team/", "/culture/",
         "/ru/", "/articles/", "/posts/", "/tutorials/",
         "/course/", "/learn/", "/guide/", "?q=", "?s=",
-        "/tag/", "/category/", "/author/","/Interview/", "glassdoor.co.in"
+        "/tag/", "/category/", "/author/","/Interview/", "glassdoor.co.in","naukri.com/code360",  
+    "/interview-experiences/",
+    "/contests/"
     ]
     for pattern in skip_patterns:
         if pattern in url_lower:
