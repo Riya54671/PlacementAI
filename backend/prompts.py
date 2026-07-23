@@ -92,36 +92,32 @@ Role: {role}
 Tech stack: {stack}
 Description: {description}
 
-SCORING CRITERIA (total 10 points)
+PRE-SCREENING RULES (check these first, they override everything):
+1. If the role requires 2+ years of experience → score = 2, stop
+2. If the role title has "Senior/Staff/Lead/Principal/Manager" → score = 2, stop  
+3. If it's clearly a non-tech role (sales, marketing, HR) → score = 1, stop
+4. If the company is a pure service/outsourcing company (Infosys, TCS, Wipro, Accenture, Capgemini) → score = 2, stop
 
+Only if none of the above apply, continue scoring:
 
 SKILLS MATCH (4 points)
 - Strong match (3+ skills overlap) → 4 pts
-- Partial match (1-2 skills overlap) → 2 pts  
+- Partial match (1-2 skills overlap) → 2 pts
 - No overlap → 0 pts
 
 ROLE TYPE (3 points)
 - Internship with PPO mentioned → 3 pts
 - Internship (PPO not mentioned) → 2 pts
-- Fresher / entry level full-time (0-1 yrs) → 1 pt
-- Mid-level (2-4 yrs required) → 0 pts
-- Senior / Staff / Principal / Manager / Lead / 5+ yrs → 0 pts
-
-HARD RULE: If the role title contains the word "Senior", "Staff", 
-"Principal", "Lead", or "Manager", the maximum possible total score 
-is 3, regardless of how well skills match. These are not appropriate 
-for an internship-seeking junior candidate.
+- Fresher / entry level (0-1 yrs) → 1 pt
 
 COMPANY QUALITY (2 points)
 - Well known / funded / product company → 2 pts
 - Mid tier / unknown startup → 1 pt
-- Service company / body shop → 0 pts
+- Service company → 0 pts
 
 BONUS (1 point)
 - PPO explicitly mentioned → +0.5
-- Fintech / AI / devtools / SaaS domain → +0.5
-- Equity or ESOPs mentioned → +0.5
-- Apply within 7 days → flag urgent
+- Fintech / AI / devtools / SaaS → +0.5
 
 Return JSON only:
 {{

@@ -106,9 +106,21 @@ def update_job_status(job_id: str, status: str) -> bool:
         return False
 
 
-def job_exists(company: str, role: str) -> bool:
-    """Check if we already have this job — prevents duplicates"""
+def job_exists(company: str, role: str, url: str = None) -> bool:
+    """Check if we already have this job"""
     try:
+        # check by URL first if provided
+        if url:
+            res = (
+                supabase.table("jobs")
+                .select("id")
+                .eq("url", url)
+                .execute()
+            )
+            if len(res.data) > 0:
+                return True
+
+        # then check company + role
         res = (
             supabase.table("jobs")
             .select("id")
@@ -118,7 +130,7 @@ def job_exists(company: str, role: str) -> bool:
         )
         return len(res.data) > 0
     except Exception as e:
-        print(f" Error checking duplicate: {e}")
+        print(f"❌ Error checking duplicate: {e}")
         return False
 
 

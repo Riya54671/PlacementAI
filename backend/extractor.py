@@ -112,8 +112,11 @@ def score_job(job: dict, config) -> dict:
 # ─── DUPLICATE CHECK ─────────────────────────────────────
 
 def is_duplicate(job: dict) -> bool:
-    """Check if this job already exists in DB"""
-    if job_exists(job.get("company", ""), job.get("role", "")):
+    if job_exists(
+        job.get("company", ""),
+        job.get("role", ""),
+        job.get("url", "")
+    ):
         print(f"   🔁 Duplicate found — skipping")
         return True
     return False
