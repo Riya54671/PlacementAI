@@ -39,6 +39,9 @@ STRICT RULES:
 - Never generate queries that could return tutorials or articles
 - Rotate companies — never repeat the same company twice
 - Focus on product companies, NOT service companies
+- Always add "intern" OR "fresher" OR "entry level" OR "0-1 years" to every query
+- Never generate queries that could return senior/mid-level roles
+- Add "-senior -lead -manager -experienced" to queries where possible
 
 Return JSON only:
 {{"queries": ["query1", "query2", ...]}}
