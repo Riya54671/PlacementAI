@@ -54,8 +54,16 @@ def generate_queries(config) -> List[str]:
         if start >= 0 and end > start:
             text = text[start:end]
 
-        data = json.loads(text)
-        queries = data.get("queries", [])
+        # try parsing — if it fails, extract queries manually
+        try:
+            data = json.loads(text)
+            queries = data.get("queries", [])
+        except json.JSONDecodeError:
+            # fallback — extract quoted strings that look like queries
+            import re
+            queries = re.findall(r'"([^"]{20,})"', text)
+            queries = [q for q in queries if q != "queries"]
+            print(f"   ⚠️  JSON parse failed, extracted {len(queries)} queries via regex")
 
         if not queries or len(queries) < 3:
             raise ValueError("Too few queries generated")
