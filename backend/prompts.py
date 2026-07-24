@@ -34,6 +34,8 @@ STRICT RULES:
 - Include "2026" in every query for freshness
 - Never repeat companies from previous searches
 - Rotate Strategy B companies every run
+- Do not put the same application link with different company names 
+- Check for duplicate urls and strict check for experience level, the experience level should be 0-2 years 
 
 Return JSON only — no explanation, just the JSON:
 {{"queries": ["query1", "query2", "query3", "query4", "query5", "query6", "query7", "query8"]}}
@@ -60,10 +62,12 @@ Your entire response must be ONLY this JSON structure, nothing else:
   "deadline": "date string or null",
   "url": "direct apply URL or null",
   "description": "2 sentence summary"
+  "experience":"experience"
 }}
 
 If this page contains multiple job listings, return a JSON array
 of objects with the same structure.
+if the experience is greater than 1 year then skip it 
 
 If this is not a job listing at all, respond with exactly:
 {{"skip": true}}
@@ -103,11 +107,11 @@ SKILLS MATCH (4 points)
 ROLE TYPE (3 points)
 - Internship with PPO mentioned → 3 pts
 - Internship (PPO not mentioned) → 2 pts
-- Fresher / entry level (0-1 yrs) → 1 pt
+- Fresher / entry level (0-1 yrs) → 2 pt
 
 COMPANY QUALITY (2 points)
 - Well known / funded / product company → 2 pts
-- Mid tier / unknown startup → 1 pt
+- Mid tier / unknown startup → 2 pt
 - Service company → 0 pts
 
 BONUS (1 point)
@@ -131,7 +135,7 @@ New job: {new_job}
 Existing jobs:
 {existing_jobs}
 
-A duplicate means same company + same role (ignore minor 
+A duplicate means same company + same role + application url (ignore minor 
 title differences like "Engineer" vs "Developer").
 
 Return JSON only:
