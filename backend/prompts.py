@@ -1,50 +1,42 @@
 SEARCH_QUERY_PROMPT = """
 You are a job search assistant helping an Indian CS student find 
-off-campus internships with PPO (Pre-Placement Offer).
+off-campus internships with PPO.
 
 Skills: {skills}
-Role type: {role_type}
+Role type: {role_type}  
 Seniority: {seniority}
 Previously searched (avoid repeating): {previous_searches}
 
-Generate 8 search queries that will ONLY find actual job listings,
-not articles, blogs or tutorials.
+Generate exactly 8 search queries. Mix these strategies:
 
-USE THESE EXACT FORMATS:
+STRATEGY A — Known job boards (2 queries):
+site:wellfound.com/jobs "intern" "react" OR "node" OR "python" india
+site:cutshort.io "internship" "backend" OR "full stack" india 2026
 
-Format A — Direct apply pages on job boards:
-site:wellfound.com/jobs "intern" "react" OR "node.js" OR "python"
-site:cutshort.io "internship" "backend" OR "full stack" india
-site:internshala.com/internship "react" OR "node" OR "python" 2025
+STRATEGY B — Funded Indian startups you haven't searched before (3 queries):
+Pick from: Groww, CRED, PhonePe, Zepto, Meesho, Razorpay, Juspay,
+Setu, BrowserStack, Postman, Freshworks, Chargebee, Hasura, Clevertap,
+Darwinbox, Sarvam AI, Krutrim, Purplle, Cashfree, Perfios,
+Sprinklr, LeadSquared, Unacademy, Vedantu, upGrad, Byju's,
+Slice, Jupiter, Jar, Fi Money, Smallcase, Streak, Weekday,
+Fueler, Superset, Reelo, Toplyne, Hyperface, Decentro
+Format: "[company] software engineering intern 2026 apply now"
 
-Format B — Specific funded Indian startups careers pages:
-"[company] careers" internship 2025 apply now
-Use companies: Groww, CRED, PhonePe, Zepto, Meesho, Swiggy, 
-Razorpay, BrowserStack, Postman, Freshworks, Juspay, Setu,
-Hasura, Chargebee, Clevertap, Darwinbox, Leadsquared,
-Unacademy, Vedantu, Byju's, Cashfree, Perfios
+STRATEGY C — YC and funded startups broadly (2 queries):
+"YC startup" OR "Y Combinator" India software intern 2026 apply
+"seed funded" OR "series A" India tech startup intern backend react
 
-Format C — LinkedIn job listings only:
-site:linkedin.com/jobs "software engineer intern" india 2025
-site:linkedin.com/jobs "backend intern" "node.js" OR "python" india
-
-Format D — Naukri specific:
-site:naukri.com "react developer" intern fresher apply 2025
-site:naukri.com "java developer" internship ppo india
+STRATEGY D — LinkedIn fresh listings (1 query):
+site:linkedin.com/jobs "software engineer intern" india 2026 -senior -lead
 
 STRICT RULES:
-- Every query must target ONLY job listing pages
-- Include "2025" or "2026" in every query for freshness
-- Include "apply" or "intern" or "internship" in every query
-- Never generate queries that could return tutorials or articles
-- Rotate companies — never repeat the same company twice
-- Focus on product companies, NOT service companies
-- Always add "intern" OR "fresher" OR "entry level" OR "0-1 years" to every query
-- Never generate queries that could return senior/mid-level roles
-- Add "-senior -lead -manager -experienced" to queries where possible
+- Include "intern" OR "internship" OR "fresher" in EVERY query
+- Include "2026" in every query for freshness
+- Never repeat companies from previous searches
+- Rotate Strategy B companies every run
 
-Return JSON only:
-{{"queries": ["query1", "query2", ...]}}
+Return JSON only — no explanation, just the JSON:
+{{"queries": ["query1", "query2", "query3", "query4", "query5", "query6", "query7", "query8"]}}
 """
 
 EXTRACTION_PROMPT = """

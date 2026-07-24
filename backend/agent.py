@@ -9,6 +9,7 @@ from search import generate_queries, search_jobs
 from scrape import scrape
 from extractor import process_page
 from models import AgentRunResult
+from company_careers import CAREER_PAGES
 
 # skip URLs that are clearly not job listings even after search
 def is_likely_job_url(url: str) -> bool:
@@ -59,6 +60,8 @@ def run_agent(max_pages: int = 15) -> AgentRunResult:
     # step 3 — search for URLs
     print(f"\nSTEP 2 — Searching for job URLs\n")
     urls = search_jobs(queries)
+    all_urls = list(set(urls + CAREER_PAGES))
+    print(f"\n📦 Total URLs (search + curated): {len(all_urls)}")
 
     if not urls:
         result.errors.append("No URLs found")
@@ -66,6 +69,9 @@ def run_agent(max_pages: int = 15) -> AgentRunResult:
         return result
 
     # limit how many pages we process per run
+    curated = [u for u in all_urls if u in CAREER_PAGES]
+    searched = [u for u in all_urls if u not in CAREER_PAGES]
+    urls = curated + searched
     urls = urls[:max_pages]
     print(f"\n📦 Processing {len(urls)} URLs this run\n")
     
